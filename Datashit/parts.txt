@@ -1,0 +1,11 @@
+PARTS
+
+lm 2940
+MEGA 328
+7805
+74LVC245
+TINOL
+HEDERI
+2x3 konektor muški/ženski
+2x5 -//-
+svitcheva i tipkala

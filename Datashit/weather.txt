@@ -1,0 +1,86 @@
+/*
+ * WeatherStation.c
+ *
+ * Created: 06-Nov-17 22:12:16
+ * Author : MrBurgy
+ */ 
+
+#define F_CPU	16000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+#include "MrBurgy/nokiaBB.h"
+#include <avr/interrupt.h>
+#include "MrBurgy/RTC.h"
+#include "MrBurgy/Button.h"
+
+#define TRUE	1
+#define ON		1
+#define FALSE	0
+#define OFF		0
+#define SetLED(x) ((x == TRUE)?(PORTC|=1<<PINC3):(PORTC &=~(1<<PINC3)))
+
+#define UP		PIND6
+#define DOWN	PINB0
+#define LEFT	PINB1
+#define RIGHT	PIND7
+#define OK		PIND2
+
+inline void LCDbackglihtInit();
+inline void EXinterruptInit();
+inline void initLED();
+inline void initButtons();
+
+uint16_t backlight = 300;
+
+int main(void)
+{
+	// init lcd
+	LCDbackglihtInit();
+	nokia_init();
+	EXinterruptInit();
+	initLED();
+	SetLED(ON);
+	_delay_ms(100);
+	SetLED(OFF);
+	_delay_ms(700);
+	sei();
+	
+    while (1) 
+    {
+		//SetLED(ON);
+		//_delay_ms(1000);
+		//SetLED(OFF);
+		//_delay_ms(1000);
+    }
+}
+ISR(INT0_vect)
+{
+	nokia_send_string("hello",0,1);
+}
+
+inline void LCDbackglihtInit()
+{
+	// backlight
+	DDRB |=1<<PINB2;
+	TCCR1A |= 1<<COM1B1 | 1<<WGM10 | 1<<WGM11;
+	TCCR1B |= 1<<WGM12 | 1<<CS11;
+	OCR1B = backlight; // 0X03ff
+}
+inline void EXinterruptInit()
+{
+	DDRD &=~(1<<PIND2);
+	PORTD |= 1<<PIND2;
+	EICRA |= 1<<ISC01;
+	EIMSK |= 1<<INT0;
+}
+inline void initLED()
+{
+	DDRC |= 1<<PINC3;
+}
+inline void initButtons()
+{
+	DDRB &=~(1<<PINB1 | 1<<PINB0);
+	DDRD &=~(1<<PIND2 | 1<<PIND6 | 1<<PIND7);
+	PORTB |= 1<<PINB1 | 1<<PINB0;
+	PORTD |= 1<<PIND2 | 1<<PIND6 | 1<<PIND7;
+}
